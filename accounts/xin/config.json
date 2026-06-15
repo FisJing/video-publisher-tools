@@ -1,0 +1,23 @@
+{
+  "name": "账号A-心",
+  "deviceId": "192.168.31.163:5555",
+  "userId": 999,
+  "description": "分身微信账号",
+  "excelPath": "accounts/xin/auto.xls",
+  "logDir": "accounts/xin/logs",
+  "positions": {
+    "discover": [675, 2300],
+    "videoChannel": [326, 500],
+    "personal": [1000, 120],
+    "publishBtn": [240, 1850],
+    "album": [100, 2300],
+    "tagLabel": [540, 200],
+    "allVideos": [540, 400],
+    "videoItem": [200, 400],
+    "selectBtn": [972, 150],
+    "completeBtn1": [980, 2300],
+    "completeBtn2": [940, 2250],
+    "descInput": [540, 1072],
+    "finalPublish": [1000, 180]
+  }
+}

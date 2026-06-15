@@ -1,0 +1,26 @@
+# 依赖
+node_modules/
+
+# 临时截图
+temp_screen_*.png
+
+# 日志文件
+*.log
+logs/
+
+# 配置文件（包含敏感信息）
+device-config.json
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 环境变量
+.env
+.env.local

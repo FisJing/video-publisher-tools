@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信视频号群控系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #333; font-size: 24px; }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .card-title { font-size: 18px; font-weight: bold; color: #333; }
+        .device-list { display: flex; flex-direction: column; gap: 15px; }
+        .device-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .device-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .device-info { flex: 1; }
+        .device-name { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .device-details { font-size: 13px; color: #666; }
+        .device-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .device-status.online { background: #d4edda; color: #155724; }
+        .device-status.offline { background: #f8d7da; color: #721c24; }
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .task-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .task-id { font-weight: bold; color: #333; }
+        .task-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .task-status.pending { background: #fff3cd; color: #856404; }
+        .task-status.running { background: #cce5ff; color: #004085; }
+        .task-status.completed { background: #d4edda; color: #155724; }
+        .task-status.failed { background: #f8d7da; color: #721c24; }
+        .task-status.stopped { background: #fff3cd; color: #856404; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-small { padding: 5px 10px; font-size: 12px; }
+        .log-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .log-entry { color: #d4d4d4; margin-bottom: 5px; }
+        .log-entry.info { color: #4ec9b0; }
+        .log-entry.success { color: #6a9955; }
+        .log-entry.error { color: #f48771; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 10px; }
+        .btn-edit {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            background: #17a2b8;
+            color: white;
+            margin-left: 10px;
+        }
+        .btn-edit:hover {
+            background: #138496;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .file-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .file-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        .file-item.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        .file-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .file-path {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+        .drop-zone {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .drop-zone:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+        .drop-zone.dragover {
+            background: #d4edda;
+            border-color: #28a745;
+            transform: scale(1.02);
+        }
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .drop-zone-text {
+            color: #666;
+            font-size: 14px;
+        }
+        .drop-zone-hint {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .stat-number { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 13px; opacity: 0.9; }
+        /* 投屏样式 */
+        .screen-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .screen-title { font-size: 18px; font-weight: bold; color: #333; }
+        .screen-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        .screen-item {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 10px;
+            width: 320px;
+            position: relative;
+        }
+        .screen-item-title {
+            color: white;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .screen-item-close {
+            cursor: pointer;
+            color: #dc3545;
+            font-size: 16px;
+        }
+        .screen-image {
+            width: 100%;
+            border-radius: 4px;
+            background: #333;
+            display: block;
+        }
+        .screen-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            flex-direction: column;
+        }
+        .screen-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .screen-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .screen-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .screen-btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .screen-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .screen-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 微信视频号群控系统</h1>
+            <div><span class="status-indicator"></span>服务运行中</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="deviceCount">0</div>
+                <div class="stat-label">在线设备</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="taskCount">0</div>
+                <div class="stat-label">执行中任务</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="publishedCount">0</div>
+                <div class="stat-label">已发布视频</div>
+            </div>
+        </div>
+
+        <!-- 投屏区域 -->
+        <div class="screen-section">
+            <div class="screen-header">
+                <span class="screen-title">📺 设备投屏</span>
+            </div>
+            <div class="screen-controls">
+                <select class="screen-select" id="screenDeviceSelect">
+                    <option value="">选择设备</option>
+                </select>
+                <button class="screen-btn screen-btn-primary" onclick="startScreenStream()">▶️ 开始投屏</button>
+                <button class="screen-btn screen-btn-primary" onclick="startAllScreenStreams()" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);">📺 全部投屏</button>
+                <button class="screen-btn screen-btn-danger" onclick="stopAllScreenStreams()">⏹️ 停止全部</button>
+            </div>
+            <div class="screen-container" id="screenContainer">
+                <div class="screen-placeholder">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📱</div>
+                    <div>选择设备后点击"开始投屏"</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">设备列表</span>
+                    <button class="btn btn-small btn-primary" onclick="refreshDevices()">🔄 刷新</button>
+                </div>
+                <div class="device-list" id="deviceList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📱</div>
+                        <div>暂无在线设备</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">创建任务</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择设备</label>
+                    <select class="form-select" id="deviceSelect">
+                        <option value="">请选择设备</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Excel文件</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-input" id="excelPathDisplay" placeholder="请选择Excel文件" style="flex: 1;" readonly>
+                        <button class="btn btn-primary btn-small" onclick="openExcelSelector()" style="white-space: nowrap;">📁 选择</button>
+                    </div>
+                    <input type="hidden" id="excelPath">
+                    <div id="scanStatus" style="margin-top: 8px; font-size: 12px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择视频</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-small btn-primary" onclick="selectAllVideos()">✅ 全选</button>
+                        <button class="btn btn-small" style="background: #6c757d; color: white;" onclick="deselectAllVideos()">❌ 取消全选</button>
+                        <span id="selectedCount" style="margin-left: auto; font-size: 12px; color: #666; line-height: 30px;">已选: 0 个</span>
+                    </div>
+                    <div id="videoList" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f8f9fa;">
+                        <div style="text-align: center; color: #999; padding: 20px;">请先加载Excel文件</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">微信类型</label>
+                    <select class="form-select" id="wechatType">
+                        <option value="0">机主微信</option>
+                        <option value="999">分身微信</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="createTask()" style="width: 100%;">
+                    📤 下发任务
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">任务列表</span>
+                </div>
+                <div class="task-list" id="taskList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div>暂无任务</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">实时日志</span>
+                    <button class="btn btn-small btn-danger" onclick="clearLogs()">清空</button>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry info">系统已启动，等待设备连接...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑设备模态框 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">📝 编辑设备信息</div>
+            <div class="form-group">
+                <label class="form-label">设备别名</label>
+                <input type="text" class="form-input" id="editAlias" placeholder="例如：账号A">
+            </div>
+            <div class="form-group">
+                <label class="form-label">描述</label>
+                <input type="text" class="form-input" id="editDescription" placeholder="例如：分身微信账号">
+            </div>
+            <input type="hidden" id="editDeviceId">
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveDeviceConfig()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择Excel文件模态框 -->
+    <div id="excelModal" class="modal">
+        <div class="modal-content" style="width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">📁 选择Excel文件</div>
+
+            <!-- 拖拽区域 -->
+            <div id="dropZone" class="drop-zone" style="margin-bottom: 20px;">
+                <div class="drop-zone-icon">📄</div>
+                <div class="drop-zone-text">拖拽Excel文件到这里</div>
+                <div class="drop-zone-hint">或者点击下方按钮扫描电脑上的文件</div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary btn-small" onclick="scanExcelFiles()" id="scanBtn">🔍 扫描电脑上的Excel文件</button>
+                <span id="scanProgress" style="margin-left: 10px; font-size: 12px; color: #666;"></span>
+            </div>
+            <div style="margin-bottom: 10px; font-size: 12px; color: #666;">
+                提示：扫描范围包括桌面、文档、下载文件夹等常见目录
+            </div>
+            <div id="excelFileList">
+                <div style="text-align: center; padding: 20px; color: #999;">点击上方按钮扫描Excel文件</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="closeExcelModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/api.js"></script>
+</body>
+</html>

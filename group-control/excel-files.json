@@ -1,0 +1,10 @@
+[
+  {
+    "name": "账号A-心",
+    "path": "./accounts/xin/auto.xls"
+  },
+  {
+    "name": "账号A-郑",
+    "path": "./accounts/zheng/auto.xls"
+  }
+]

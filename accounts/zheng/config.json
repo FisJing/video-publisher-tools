@@ -1,0 +1,23 @@
+{
+  "name": "账号A-郑",
+  "deviceId": "192.168.31.167:5555",
+  "userId": 0,
+  "description": "机主微信账号",
+  "excelPath": "accounts/zheng/auto.xls",
+  "logDir": "accounts/zheng/logs",
+  "positions": {
+    "discover": [675, 2300],
+    "videoChannel": [326, 500],
+    "personal": [1000, 120],
+    "publishBtn": [240, 1850],
+    "album": [100, 2300],
+    "tagLabel": [540, 200],
+    "allVideos": [540, 400],
+    "videoItem": [200, 400],
+    "selectBtn": [972, 150],
+    "completeBtn1": [980, 2300],
+    "completeBtn2": [940, 2250],
+    "descInput": [540, 1072],
+    "finalPublish": [972, 180]
+  }
+}

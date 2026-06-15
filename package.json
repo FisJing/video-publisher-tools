@@ -1,0 +1,23 @@
+{
+  "name": "wechat-video-publisher",
+  "version": "1.0.0",
+  "description": "微信视频号自动发布系统 - 支持多账号、断点续传、日志记录",
+  "main": "start-all.js",
+  "scripts": {
+    "start": "node start-all.js",
+    "xin": "node run-xin.js",
+    "zheng": "node run-zheng.js"
+  },
+  "keywords": [
+    "wechat",
+    "video",
+    "publish",
+    "automation",
+    "adb"
+  ],
+  "author": "Lremi",
+  "license": "MIT",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
