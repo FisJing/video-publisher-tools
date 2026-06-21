@@ -47,6 +47,16 @@ function updateDeviceList() {
         const deviceType = device.type === 'adb' ? 'ADB' : 'WebSocket';
         const displayName = device.alias || `${device.info.brand} ${device.info.model}`;
 
+        // 提取IP地址
+        let ipInfo = deviceId;
+        if (deviceId.includes(':')) {
+            // 格式: 192.168.31.61:5555 -> 显示 192.168.31.61:5555
+            ipInfo = deviceId;
+        } else if (deviceId.startsWith('adb-')) {
+            // 格式: adb-xxxx -> 显示原始ID
+            ipInfo = deviceId;
+        }
+
         html += `
             <div class="device-item">
                 <div class="device-info" onclick="loadDeviceApps('${deviceId}')" style="flex: 1; cursor: pointer;">
@@ -54,7 +64,7 @@ function updateDeviceList() {
                         <button class="btn-edit" onclick="event.stopPropagation(); openEditModal('${deviceId}')">✏️ 编辑</button>
                     </div>
                     <div class="device-details">
-                        型号: ${device.info.model} | 类型: ${deviceType} | ${device.description || ''}
+                        IP: <span style="color: #667eea; font-weight: 500;">${ipInfo}</span> | 型号: ${device.info.model} | 类型: ${deviceType}
                     </div>
                     <div id="apps-${deviceId}" style="margin-top: 8px; font-size: 12px;"></div>
                 </div>

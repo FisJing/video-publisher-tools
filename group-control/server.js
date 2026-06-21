@@ -580,6 +580,13 @@ function handleAPI(req, res) {
         return;
     }
 
+    // GET /api/device-config - 获取所有设备配置
+    if (req.url === '/api/device-config' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(deviceConfig));
+        return;
+    }
+
     // PUT /api/device-config/:deviceId - 更新设备配置
     if (req.url.match(/^\/api\/device-config\/.+/) && req.method === 'PUT') {
         const deviceId = decodeURIComponent(req.url.split('/').pop());
